@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memory-stress-development
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memory-stress
+  template:
+    metadata:
+      labels:
+        app: memory-stress
+    spec:
+      containers:
+        - name: memory-stressor
+          image: polinux/stress
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+          command: ["stress"]
+          args: ["--vm", "1", "--vm-bytes", "200M", "--vm-hang", "1", "--timeout", "3600s"]

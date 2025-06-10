@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-sample-pod
+  namespace: default
+spec:
+  volumes:
+  - name: emptydir-sample-volume
+    emptyDir: {}
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    volumeMounts:
+    - mountPath: /test
+      name: emptydir-sample-volume

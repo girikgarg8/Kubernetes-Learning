@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-sample-pod
+  namespace: my-namespace
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      resources:
+        requests: 
+          cpu: "300m"
+          memory: "200Mi" # to test limitrange

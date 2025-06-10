@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example-pod
+spec:
+  containers:
+  - name: example-container
+    image: nginx:latest
+    ports:
+      - containerPort: 80
+    volumeMounts:
+      - name: storage
+        mountPath: '/mnt/girik/pod/testing' # The path inside the container where the volume should be mounted.
+  volumes:
+  - name: storage
+    persistentVolumeClaim: 
+      claimName: example-pvc

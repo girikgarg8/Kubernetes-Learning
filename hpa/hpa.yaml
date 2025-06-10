@@ -1,0 +1,37 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: memory-hpa
+spec:
+  scaleTargetRef: 
+    apiVersion: apps/v1
+    kind: Deployment
+    name: memory-stress-development
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 50 
+        # In the context of Kubernetes Horizontal Pod Autoscaler (HPA) configuration for CPU, it always refers to 50% of the CPU request, not the limit. 
+        # This decision to use requests instead of limits is based on the idea that requests are what the application needs to function correctly under normal circumstances, while limits are hard boundaries that the application shouldn't exceed. By scaling based on requests, the HPA aims to ensure that each instance of an application has enough resources to perform as expected, without being influenced by the hard limits that are often set higher to allow for unexpected spikes in usage.
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60  # The HPA will look at the last 60 seconds of metric data to make scaling decisions. It uses this to "smooth out" short spikes or drops in resource usage.
+      policies:
+        - type: Pods
+          value: 2  # Maximum number of pods to add in one scaling operation
+          periodSeconds: 15  # This setting in the scaleUp or scaleDown policies dictates how often scaling actions can be initiated after a previous scaling action has occurred. For instance, if periodSeconds is set to 30 seconds in scaleDown policies, then after scaling down, the HPA will not scale down again for at least another 30 seconds, regardless of the metrics.
+    scaleDown:
+      stabilizationWindowSeconds: 60  # The HPA will look at the last 60 seconds of metric data to make scaling decisions. It uses this to "smooth out" short spikes or drops in resource usage.
+      policies:
+        - type: Percent
+          value: 50  # Maximum percentage of pods to remove in one scaling operation
+          periodSeconds: 60 # This setting in the scaleUp or scaleDown policies dictates how often scaling actions can be initiated after a previous scaling action has occurred. 
+          # For instance, if periodSeconds is set to 30 seconds in scaleDown policies, then after scaling down, the HPA will not scale down again for at least another 30 seconds, regardless of the metrics.
+
+# kubectl get hpa memory-hpa -w

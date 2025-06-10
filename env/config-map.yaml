@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-world-configmap
+data:
+  application_version: "v1.2"
+  application_name: "girik-demo-app"

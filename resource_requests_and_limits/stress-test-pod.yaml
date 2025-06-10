@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-test-pod
+spec:
+  containers:
+  - name: stress-container
+    image: polinux/stress
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "200m"
+      limits:
+        memory: "256Mi" # stress --vm 1 --vm-bytes 300M --vm-hang 0 -t 60s, requesting 300 Mi of memory > 256 Mi limit
+        cpu: "500m" #stress --cpu 1 -t 300s
+
+    command: ["sleep"]
+    args: ["999999"] # sleep to keep the container running
