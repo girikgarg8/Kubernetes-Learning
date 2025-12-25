@@ -1,0 +1,64 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cpu-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: stress-deployment # the deployment to scale
+  minReplicas: 1 # minumum number of pods (won't scale below this)
+  maxReplicas: 5 # maximum number of pods (won't scale above this)
+
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50 
+        # Scale when average CPU usage across all pods exceeds 50% of CPU requests
+        # Always based on requests, not limits
+        # Example: If request is 200m and usage is 120m, utilization = 120/200 = 60% (triggers scale up)
+    
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      # It's a time window during which HPA looks at historical metrics before making a scaling decision.
+      # It prevents HPA from reacting to temporary spikes or dips.
+
+      # HPA Logic for Scale-Up:
+      # Collect metrics over the last 60 seconds
+      # Use the MAXIMUM value from that window
+      # If max value > target, scale up
+      # Why maximum? To respond quickly to traffic spikes and avoid outages.
+
+      policies:
+        - type: Pods
+          value: 2 # add 2 pods per scaling operation
+          periodSeconds: 15 # rate limit: can scale up every 15 seconds
+
+        - type: Percent
+          value: 100 # add 100% of current pods (doubles)
+          periodSeconds: 15
+
+      selectPolicy: Max # choose the policy that results in MORE replicas (more aggressive)
+
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      # HPA Logic for Scale-Down:
+      # Collect metrics over the last 300 seconds (5 minutes)
+      # Use the MAXIMUM value from that window
+      # If max value < target, scale down
+      # Why maximum for scale-down? To prevent premature scale-down. If there was ANY spike in the last 5 minutes, HPA keeps the higher replica count.
+
+      policies:
+        - type: Pods
+          value: 1 # remove 1 pod per scaling operation
+          periodSeconds: 60 # rate limit: can scale down every 60 seconds
+
+        - type: Percent
+          value: 10 # Remove 10% of current pods
+          periodSeconds: 60 # rate limit: can scale down every 60 seconds
+
+      selectPolicy: Min # choose the policy that removes FEWER replicas (more conservative)

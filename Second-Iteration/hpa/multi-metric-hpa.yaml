@@ -1,0 +1,56 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: multi-metric-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: stress-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target: 
+        type: Utilization
+        averageUtilization: 60 # scale up if cpu utilization greater than 60% of cpu request
+
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70 # scale up if memory utilization greater than 70% of memory request
+
+  # With multiple metrics, HPA calculates the desired TOTAL replica count for each metric
+  # and uses the HIGHEST value (most conservative approach)
+  # 
+  # Scale-up example: 
+  #   - CPU metric calculates: need 3 total replicas
+  #   - Memory metric calculates: need 5 total replicas
+  #   - HPA scales TO 5 replicas (the higher value)
+  # 
+  # Scale-down example: 
+  #   - CPU metric calculates: need 2 total replicas
+  #   - Memory metric calculates: need 4 total replicas
+  #   - HPA scales TO 4 replicas (the higher value, more conservative)
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 50 # Increase by 50% of current pods
+          periodSeconds: 30
+
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+        - type: Percent
+          value: 1
+          periodSeconds: 120
+
+    
+  

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: resource-limit-range
+  namespace: test-namespace 
+spec:
+  limits: 
+  - type: Pod
+    max: 
+      cpu: "2"
+      memory: "2Gi"
+    min:
+      cpu: "100m"
+      memory: "50Mi"
+  
+  - type: Container
+    default: # the default limit that is applied to every resource in the namespace, unless overriden explicitly by the resource's limit section
+      cpu: "300m"
+      memory: "300Mi"
+
+    defaultRequest: # the default request that is applied to every resource in the namespace, unless overriden explicity by the resource's request section
+      cpu: "200m"
+      memory: "200Mi"
+
+    max:
+      cpu: "1"
+      memory: "1Gi"
+
+    min:
+      cpu: "50m"
+      memory: "50Mi"

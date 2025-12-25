@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-ephemeral
+  labels:
+    app: nginx-ephemeral
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    volumeMounts: # mounting the volume to container
+    - name: ephemeral-storage 
+      mountPath: /usr/girik
+  volumes: # declaring the volume
+  - name: ephemeral-storage
+    emptyDir: {}

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-top-pod
+spec: 
+  containers: 
+  - name: stress-container
+    image: polinux/stress
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "200m"
+      limits:
+        memory: "256Mi"
+        cpu: "500m"
+    command: ["sleep"]
+    args: ["999999"]
+
+# reason why sleep 999999 is required is because polinux/stress image is designed to run stress tests
+# Without the sleep, on starting the container it might run some default stress tests or exit immediately, leading to unpredictable behavior
+
+# To test memory limit, access the terminal of the pod and then stress --vm 1 --vm-bytes 300M --vm-hang 0 -t 60s (will lead to OOM Killed)
+
+# To test CPU limit, access the terminal of the pod and then stress --cpu 1 -t 300s (will lead to CPU throttling for container but not kill it)
+
+
